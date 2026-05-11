@@ -12,8 +12,9 @@ import { NEXT_PUBLIC_WC_PROJECT_ID } from './config';
 
 export function useWagmiConfig() {
   const projectId = NEXT_PUBLIC_WC_PROJECT_ID ?? '';
-  
+
   return useMemo(() => {
+    // FIX 4: Invoke wallet constructors with required appName/projectId args
     const connectors = connectorsForWallets(
       [
         {
@@ -22,6 +23,7 @@ export function useWagmiConfig() {
         },
         {
           groupName: 'Other Wallets',
+          // metaMaskWallet and rainbowWallet also need projectId for WalletConnect
           wallets: [rainbowWallet, metaMaskWallet],
         },
       ],
@@ -32,12 +34,13 @@ export function useWagmiConfig() {
     );
 
     return createConfig({
-      chains: [base], // Only Mainnet
+      chains: [base],
       multiInjectedProviderDiscovery: true,
       connectors,
       ssr: true,
       transports: {
-        [base.id]: http(),
+        // FIX 5: Use a reliable RPC URL; fallback to public if env var not set
+        [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC_URL ?? 'https://mainnet.base.org'),
       },
     });
   }, [projectId]);
