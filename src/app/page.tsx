@@ -8,29 +8,13 @@ import {
   TransactionStatusAction,
   TransactionStatusLabel,
 } from '@coinbase/onchainkit/transaction';
-import type {
-  LifecycleStatus,
-  ContractFunctionParameters,
-} from '@coinbase/onchainkit/transaction';
-import { base } from 'viem/chains';
+import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
+import type { ContractFunctionParameters } from 'viem';
+import { base } from 'wagmi/chains';
 import WalletWrapper from '../components/WalletWrapper';
 
 const XEG_CONTRACT = '0x1fE534C537Bc53f5AAe1fD04162c2e8A0FE5323C' as const;
 const USDC_TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const;
-
-const XEG_PAY_ABI = [
-  {
-    inputs: [
-      { internalType: 'address', name: 'token', type: 'address' },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
-      { internalType: 'string', name: 'referenceId', type: 'string' },
-    ],
-    name: 'payBill',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const;
 
 const USDC_ABI = [
   {
@@ -45,11 +29,23 @@ const USDC_ABI = [
   },
 ] as const;
 
+const XEG_PAY_ABI = [
+  {
+    name: 'payBill',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { internalType: 'address', name: 'token', type: 'address' },
+      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+      { internalType: 'string', name: 'referenceId', type: 'string' },
+    ],
+    outputs: [],
+  },
+] as const;
+
 export default function Page() {
-  // FIX 1: Guard – only show Transaction when wallet is connected
   const { address } = useAccount();
 
-  // FIX 2: Memoize calls so the array reference is stable across renders
   const calls = useMemo<ContractFunctionParameters[]>(
     () => [
       {
@@ -68,7 +64,6 @@ export default function Page() {
     [],
   );
 
-  // FIX 3: Wrap in useCallback
   const handleOnStatus = useCallback((status: LifecycleStatus) => {
     console.log('LifecycleStatus', status);
   }, []);
@@ -97,7 +92,6 @@ export default function Page() {
             </div>
           </div>
 
-          {/* FIX 1: Only render Transaction when wallet is connected */}
           {address ? (
             <Transaction
               chainId={base.id}
@@ -114,7 +108,7 @@ export default function Page() {
               </TransactionStatus>
             </Transaction>
           ) : (
-            <p className="text-center text-sm text-slate-400">
+            <p className="text-center text-sm text-slate-400 py-4">
               Connect your wallet to pay.
             </p>
           )}
