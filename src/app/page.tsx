@@ -7,10 +7,10 @@ import {
   TransactionStatusAction, 
   TransactionStatusLabel 
 } from '@coinbase/onchainkit/transaction'; 
+import type { Call } from '@coinbase/onchainkit/transaction'; // Added this for TypeScript
 import { base } from 'viem/chains';
 import WalletWrapper from '../components/WalletWrapper';
 
-// THE "HOW-TO" FOR YOUR CONTRACT
 const XEG_PAY_ABI = [
   {
     "inputs": [
@@ -25,7 +25,6 @@ const XEG_PAY_ABI = [
   }
 ] as const;
 
-// THE "HOW-TO" FOR USDC (To allow the payment)
 const USDC_ABI = [
   {
     "name": "approve",
@@ -40,20 +39,20 @@ const USDC_ABI = [
 ] as const;
 
 export default function Page() {
-  const XEG_CONTRACT = '0x1fE534C537Bc53f5AAe1fD04162c2e8A0FE5323C';
-  const USDC_TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-  const AMOUNT = BigInt(1000000); // $1.00 USDC (USDC has 6 decimals)
+  const XEG_CONTRACT = '0x1fE534C537Bc53f5AAe1fD04162c2e8A0FE5323C' as `0x${string}`;
+  const USDC_TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`;
+  const AMOUNT = BigInt(1000000); 
 
-  // MULTI-CALL: First we Approve, then we Pay.
-  const calls = [
+  // CHANGED: 'address' is now 'to', and we added the Call[] type
+  const calls: Call[] = [
     {
-      address: USDC_TOKEN,
+      to: USDC_TOKEN, 
       abi: USDC_ABI,
       functionName: 'approve',
       args: [XEG_CONTRACT, AMOUNT],
     },
     {
-      address: XEG_CONTRACT,
+      to: XEG_CONTRACT,
       abi: XEG_PAY_ABI,
       functionName: 'payBill',
       args: [USDC_TOKEN, AMOUNT, 'INV-001'],
@@ -61,9 +60,9 @@ export default function Page() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-white font-sans">
+    <div className="flex flex-col min-h-screen bg-slate-950 text-white">
       <header className="flex justify-between items-center p-6 border-b border-slate-800">
-        <span className="text-2xl font-black italic tracking-tighter text-blue-500">XEGpay</span>
+        <span className="text-2xl font-black italic text-blue-500">XEGpay</span>
         <WalletWrapper text="Connect" />
       </header>
 
@@ -73,8 +72,8 @@ export default function Page() {
           
           <div className="bg-black p-4 rounded-xl mb-8 border border-slate-800">
             <div className="flex justify-between mb-2">
-              <span className="text-slate-400">Merchant</span>
-              <span>XEGpay Gateway</span>
+              <span className="text-slate-400">Status</span>
+              <span className="text-green-400">Mainnet Active</span>
             </div>
             <div className="flex justify-between font-bold text-lg">
               <span className="text-slate-400">Total Due</span>
